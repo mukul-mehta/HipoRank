@@ -25,10 +25,10 @@ class LegalDataset:
         for file_name in Path("").glob(file_pattern):
             with h5py.File(file_name, "r") as f:
                 data = [json.loads(j_str) for j_str in f["dataset"]]
-                docs_batch = [CnndmDoc(x["article"], x["abstract"]) for x in data]
+                docs_batch = [LegalDoc(x["article"], x["abstract"]) for x in data]
                 docs += docs_batch
 
-        def filter_doc(doc: CnndmDoc):
+        def filter_doc(doc: LegalDoc):
             if len(doc.article_text) == 0:
                 return False
             if len(doc.abstract_text) == 0:
@@ -42,7 +42,7 @@ class LegalDataset:
         docs = list(filter(filter_doc, docs))
         return docs
 
-    def _get_sections(self, doc: CnndmDoc) -> List[Section]:
+    def _get_sections(self, doc: LegalDoc) -> List[Section]:
         l = len(doc.article_text)
         s = l // self.n
         return [
@@ -50,7 +50,7 @@ class LegalDataset:
             for i in range(0, l, s)
         ]
 
-    def _get_reference(self, doc: CnndmDoc) -> List[str]:
+    def _get_reference(self, doc: LegalDoc) -> List[str]:
         return doc.abstract_text
 
     def __iter__(self) -> Iterator[Document]:
