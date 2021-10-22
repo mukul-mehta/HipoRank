@@ -24,6 +24,3 @@ class DefaultSummarizer:
             if i >= len(sorted_scores):
                 break
         return summary
-
-
-

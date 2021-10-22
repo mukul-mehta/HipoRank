@@ -21,25 +21,37 @@ import time
 from tqdm import tqdm
 
 DEBUG = False
-ROUGE_ARGS = "-e /path_to_rouge/RELEASE-1.5.5/data -c 95 -n 2 -a -m"
+ROUGE_ARGS = "-e /Users/mukul-mehta/CS/HipoRank/ROUGE-1.5.5/data -c 95 -n 2 -a -m"
 
 """
 cnndm val set
 """
 
 DATASETS = [
-    ("cnndm_val", CnndmDataset, {"file_path": "data/pacsum_data/data/CNN_DM/cd.test.h5df"}),
-    ("cnndm_val_2", CnndmDataset,
-     {"file_path": "data/pacsum_data/data/CNN_DM/cd.test.h5df",
-      "split_into_n_sections": 2}),
+    (
+        "cnndm_val",
+        CnndmDataset,
+        {"file_path": "data/legal-dataset/legal.test.h5df"},
+    ),
+    (
+        "cnndm_val_2",
+        CnndmDataset,
+        {
+            "file_path": "data/pacsum_data/CNN_DM/cd.test.h5df",
+            "split_into_n_sections": 2,
+        },
+    ),
 ]
 EMBEDDERS = [
     ("rand_768", RandEmbedder, {"dim": 768}),
-    ("pacsum_bert", BertEmbedder,
-     {"bert_config_path": "models/pacssum_models/bert_config.json",
-      "bert_model_path": "models/pacssum_models/pytorch_model_finetuned.bin",
-      "bert_tokenizer": "bert-base-uncased",
-      }
+    (
+        "pacsum_bert",
+        BertEmbedder,
+        {
+            "bert_config_path": "models/pacssum_models/bert_config.json",
+            "bert_model_path": "models/pacssum_models/pytorch_model_finetuned.bin",
+            "bert_tokenizer": "bert-base-uncased",
+        },
     ),
 ]
 SIMILARITIES = [
@@ -57,12 +69,28 @@ SCORERS = [
     ("add_f=0.0_b=1.0_s=1.0", AddScorer, {}),
     ("add_f=0.0_b=1.0_s=1.5", AddScorer, {"section_weight": 1.5}),
     ("add_f=0.0_b=1.0_s=0.5", AddScorer, {"section_weight": 0.5}),
-    ("add_f=-0.2_b=1.0_s=1.0", AddScorer, {"forward_weight":-0.2}),
-    ("add_f=-0.2_b=1.0_s=1.5", AddScorer, {"forward_weight":-0.2, "section_weight": 1.5}),
-    ("add_f=-0.2_b=1.0_s=0.5", AddScorer, {"forward_weight":-0.2,"section_weight": 0.5}),
-    ("add_f=0.5_b=1.0_s=1.0", AddScorer, {"forward_weight":0.5}),
-    ("add_f=0.5_b=1.0_s=1.5", AddScorer, {"forward_weight":0.5, "section_weight": 1.5}),
-    ("add_f=0.5_b=1.0_s=0.5", AddScorer, {"forward_weight":0.5,"section_weight": 0.5}),
+    ("add_f=-0.2_b=1.0_s=1.0", AddScorer, {"forward_weight": -0.2}),
+    (
+        "add_f=-0.2_b=1.0_s=1.5",
+        AddScorer,
+        {"forward_weight": -0.2, "section_weight": 1.5},
+    ),
+    (
+        "add_f=-0.2_b=1.0_s=0.5",
+        AddScorer,
+        {"forward_weight": -0.2, "section_weight": 0.5},
+    ),
+    ("add_f=0.5_b=1.0_s=1.0", AddScorer, {"forward_weight": 0.5}),
+    (
+        "add_f=0.5_b=1.0_s=1.5",
+        AddScorer,
+        {"forward_weight": 0.5, "section_weight": 1.5},
+    ),
+    (
+        "add_f=0.5_b=1.0_s=0.5",
+        AddScorer,
+    ),
+    {"forward_weight": 0.5, "section_weight": 0.5},
     ("multiply", MultiplyScorer, {}),
 ]
 
@@ -77,6 +105,7 @@ for embedder_id, embedder, embedder_args in EMBEDDERS:
     Embedder = embedder(**embedder_args)
     for dataset_id, dataset, dataset_args in DATASETS:
         DataSet = dataset(**dataset_args)
+        exit()
         docs = list(DataSet)
         if DEBUG:
             docs = docs[:5]
@@ -104,18 +133,26 @@ for embedder_id, embedder, embedder_args in EMBEDDERS:
                         for sim, doc in zip(sims, docs):
                             scores = Scorer.get_scores(sim)
                             summary = Summarizer.get_summary(doc, scores)
-                            results.append({
-                                "num_sects": len(doc.sections),
-                                "num_sents": sum([len(s.sentences) for s in doc.sections]),
-                                "summary": summary,
-
-                            })
+                            results.append(
+                                {
+                                    "num_sects": len(doc.sections),
+                                    "num_sents": sum(
+                                        [len(s.sentences) for s in doc.sections]
+                                    ),
+                                    "summary": summary,
+                                }
+                            )
                             summaries.append([s[0] for s in summary])
                             references.append([doc.reference])
-                        rouge_result = evaluate_rouge(summaries, references, rouge_args=ROUGE_ARGS)
-                        (experiment_path / "rouge_results.json").write_text(json.dumps(rouge_result, indent=2))
-                        (experiment_path / "summaries.json").write_text(json.dumps(results, indent=2))
+                        rouge_result = evaluate_rouge(
+                            summaries, references, rouge_args=ROUGE_ARGS
+                        )
+                        (experiment_path / "rouge_results.json").write_text(
+                            json.dumps(rouge_result, indent=2)
+                        )
+                        (experiment_path / "summaries.json").write_text(
+                            json.dumps(results, indent=2)
+                        )
                     except FileExistsError:
                         print(f"{experiment} already exists, skipping...")
                         pass
-

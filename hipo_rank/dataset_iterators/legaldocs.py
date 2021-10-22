@@ -9,13 +9,12 @@ from hipo_rank import Document, Section
 
 
 @dataclass
-class CnndmDoc:
-    # dataclass wrapper for original CNN_DM dataset format
+class LegalDoc:
     article_text: List[str]
     abstract_text: List[str]
 
 
-class CnndmDataset(object):
+class LegalDataset:
     def __init__(self, file_path: str, split_into_n_sections: int = 1):
         self.docs = self._load_docs(file_path)
         self.n = split_into_n_sections

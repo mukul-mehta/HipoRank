@@ -27,23 +27,29 @@ DEBUG = False
 
 DATASETS = [
     ("arxiv_val", PubmedDataset, {"file_path": "data/arxiv-release/val.txt"}),
-    ("arxiv_val_no_sections", PubmedDataset, {"file_path": "data/arxiv-release/val.txt",
-                                  "no_sections": True}),
+    (
+        "arxiv_val_no_sections",
+        PubmedDataset,
+        {"file_path": "data/arxiv-release/val.txt", "no_sections": True},
+    ),
 ]
 EMBEDDERS = [
     ("rand_200", RandEmbedder, {"dim": 200}),
-    ("pacsum_bert", BertEmbedder,
-     {"bert_config_path": "models/pacssum_models/bert_config.json",
-      "bert_model_path": "models/pacssum_models/pytorch_model_finetuned.bin",
-      "bert_tokenizer": "bert-base-uncased",
-      }
+    (
+        "pacsum_bert",
+        BertEmbedder,
+        {
+            "bert_config_path": "models/pacssum_models/bert_config.json",
+            "bert_model_path": "models/pacssum_models/pytorch_model_finetuned.bin",
+            "bert_tokenizer": "bert-base-uncased",
+        },
     ),
-    ("st_bert_base", SentTransformersEmbedder,
-         {"model": "bert-base-nli-mean-tokens"}
-        ),
-    ("st_roberta_large", SentTransformersEmbedder,
-         {"model": "roberta-large-nli-mean-tokens"}
-        ),
+    ("st_bert_base", SentTransformersEmbedder, {"model": "bert-base-nli-mean-tokens"}),
+    (
+        "st_roberta_large",
+        SentTransformersEmbedder,
+        {"model": "roberta-large-nli-mean-tokens"},
+    ),
 ]
 SIMILARITIES = [
     ("cos", CosSimilarity, {}),
@@ -56,10 +62,18 @@ SCORERS = [
     ("add_f=0.0_b=1.0_s=1.0", AddScorer, {}),
     ("add_f=0.0_b=1.0_s=1.5", AddScorer, {"section_weight": 1.5}),
     ("add_f=0.0_b=1.0_s=0.5", AddScorer, {"section_weight": 0.5}),
-    ("add_f=-0.2_b=1.0_s=1.0", AddScorer, {"forward_weight":-0.2}),
-    ("add_f=-0.2_b=1.0_s=0.5", AddScorer, {"forward_weight":-0.2,"section_weight": 0.5}),
-    ("add_f=0.5_b=1.0_s=1.0", AddScorer, {"forward_weight":0.5}),
-    ("add_f=0.5_b=1.0_s=0.5", AddScorer, {"forward_weight":0.5,"section_weight": 0.5}),
+    ("add_f=-0.2_b=1.0_s=1.0", AddScorer, {"forward_weight": -0.2}),
+    (
+        "add_f=-0.2_b=1.0_s=0.5",
+        AddScorer,
+        {"forward_weight": -0.2, "section_weight": 0.5},
+    ),
+    ("add_f=0.5_b=1.0_s=1.0", AddScorer, {"forward_weight": 0.5}),
+    (
+        "add_f=0.5_b=1.0_s=0.5",
+        AddScorer,
+        {"forward_weight": 0.5, "section_weight": 0.5},
+    ),
 ]
 
 
@@ -99,18 +113,24 @@ for embedder_id, embedder, embedder_args in EMBEDDERS:
                         for sim, doc in zip(sims, docs):
                             scores = Scorer.get_scores(sim)
                             summary = Summarizer.get_summary(doc, scores)
-                            results.append({
-                                "num_sects": len(doc.sections),
-                                "num_sents": sum([len(s.sentences) for s in doc.sections]),
-                                "summary": summary,
-
-                            })
+                            results.append(
+                                {
+                                    "num_sects": len(doc.sections),
+                                    "num_sents": sum(
+                                        [len(s.sentences) for s in doc.sections]
+                                    ),
+                                    "summary": summary,
+                                }
+                            )
                             summaries.append([s[0] for s in summary])
                             references.append([doc.reference])
                         rouge_result = evaluate_rouge(summaries, references)
-                        (experiment_path / "rouge_results.json").write_text(json.dumps(rouge_result, indent=2))
-                        (experiment_path / "summaries.json").write_text(json.dumps(results, indent=2))
+                        (experiment_path / "rouge_results.json").write_text(
+                            json.dumps(rouge_result, indent=2)
+                        )
+                        (experiment_path / "summaries.json").write_text(
+                            json.dumps(results, indent=2)
+                        )
                     except FileExistsError:
                         print(f"{experiment} already exists, skipping...")
                         pass
-
