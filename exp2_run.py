@@ -1,12 +1,7 @@
-from hipo_rank.dataset_iterators.cnn_dm import CnndmDataset
-
-from hipo_rank.embedders.rand import RandEmbedder
+from hipo_rank.dataset_iterators.legaldocs import LegalDataset
 from hipo_rank.embedders.bert import BertEmbedder
 
 from hipo_rank.similarities.cos import CosSimilarity
-
-from hipo_rank.directions.undirected import Undirected
-from hipo_rank.directions.order import OrderBased
 from hipo_rank.directions.edge import EdgeBased
 
 from hipo_rank.scorers.add import AddScorer
@@ -24,26 +19,17 @@ DEBUG = False
 ROUGE_ARGS = "-e /Users/mukul-mehta/CS/HipoRank/ROUGE-1.5.5/data -c 95 -n 2 -a -m"
 
 """
-cnndm val set
+LegalDocs test set
 """
 
 DATASETS = [
     (
-        "cnndm_val",
-        CnndmDataset,
+        "legal",
+        LegalDataset,
         {"file_path": "data/legal-dataset/legal.test.h5df"},
-    ),
-    (
-        "cnndm_val_2",
-        CnndmDataset,
-        {
-            "file_path": "data/pacsum_data/CNN_DM/cd.test.h5df",
-            "split_into_n_sections": 2,
-        },
     ),
 ]
 EMBEDDERS = [
-    ("rand_768", RandEmbedder, {"dim": 768}),
     (
         "pacsum_bert",
         BertEmbedder,
@@ -58,48 +44,19 @@ SIMILARITIES = [
     ("cos", CosSimilarity, {}),
 ]
 DIRECTIONS = [
-    ("undirected", Undirected, {}),
-    ("order", OrderBased, {}),
     ("edge", EdgeBased, {}),
-    ("backloaded_edge", EdgeBased, {"u": 0.8}),
-    ("frontloaded_edge", EdgeBased, {"u": 1.2}),
 ]
 
 SCORERS = [
     ("add_f=0.0_b=1.0_s=1.0", AddScorer, {}),
-    ("add_f=0.0_b=1.0_s=1.5", AddScorer, {"section_weight": 1.5}),
-    ("add_f=0.0_b=1.0_s=0.5", AddScorer, {"section_weight": 0.5}),
-    ("add_f=-0.2_b=1.0_s=1.0", AddScorer, {"forward_weight": -0.2}),
-    (
-        "add_f=-0.2_b=1.0_s=1.5",
-        AddScorer,
-        {"forward_weight": -0.2, "section_weight": 1.5},
-    ),
-    (
-        "add_f=-0.2_b=1.0_s=0.5",
-        AddScorer,
-        {"forward_weight": -0.2, "section_weight": 0.5},
-    ),
-    ("add_f=0.5_b=1.0_s=1.0", AddScorer, {"forward_weight": 0.5}),
-    (
-        "add_f=0.5_b=1.0_s=1.5",
-        AddScorer,
-        {"forward_weight": 0.5, "section_weight": 1.5},
-    ),
-    (
-        "add_f=0.5_b=1.0_s=0.5",
-        AddScorer,
-    ),
-    {"forward_weight": 0.5, "section_weight": 0.5},
-    ("multiply", MultiplyScorer, {}),
 ]
 
 
-Summarizer = DefaultSummarizer(num_words=60)
+Summarizer = DefaultSummarizer(num_words=100)
 
 experiment_time = int(time.time())
 # results_path = Path(f"results/{experiment_time}")
-results_path = Path(f"results/exp2")
+results_path = Path(f"results/legal_test_summary")
 
 for embedder_id, embedder, embedder_args in EMBEDDERS:
     Embedder = embedder(**embedder_args)
