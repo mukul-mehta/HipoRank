@@ -27,49 +27,15 @@ DEBUG = False
 # PubMed hyperparameter gridsearch and ablation study
 
 DATASETS = [
-    ("pubmed_val", PubmedDataset, {"file_path": "data/pubmed-dataset/val.txt"}),
     (
         "pubmed_val_no_sections",
         PubmedDataset,
-        {"file_path": "data/pubmed-dataset/val.txt", "no_sections": True},
+        {"file_path": "data/legal-dataset/val.txt", "no_sections": True},
     ),
 ]
 
 EMBEDDERS = [
     ("rand_200", RandEmbedder, {"dim": 200}),
-    (
-        "biomed_w2v",
-        W2VEmbedder,
-        {"bin_path": "models/wikipedia-pubmed-and-PMC-w2v.bin"},
-    ),
-    (
-        "biobert",
-        BertEmbedder,
-        {
-            "bert_config_path": "models/biobert_v1.1_pubmed/bert_config.json",
-            "bert_model_path": "models/biobert_v1.1_pubmed/pytorch_model.bin",
-            "bert_tokenizer": "bert-base-cased",
-        },
-    ),
-    (
-        "bert",
-        BertEmbedder,
-        {
-            "bert_config_path": "",
-            "bert_model_path": "",
-            "bert_tokenizer": "bert-base-cased",
-            "bert_pretrained": "bert-base-cased",
-        },
-    ),
-    (
-        "pacsum_bert",
-        BertEmbedder,
-        {
-            "bert_config_path": "models/pacssum_models/bert_config.json",
-            "bert_model_path": "models/pacssum_models/pytorch_model_finetuned.bin",
-            "bert_tokenizer": "bert-base-uncased",
-        },
-    ),
     ("st_bert_base", SentTransformersEmbedder, {"model": "bert-base-nli-mean-tokens"}),
     (
         "st_roberta_large",

@@ -12,18 +12,20 @@ class BertEmbedder:
                  bert_tokenizer: str = "bert-base-cased",
                  bert_pretrained: str = None,
                  max_seq_len: int = 60,
-                 cuda: bool = True):
+                 cuda: bool = False):
         self.max_seq_len = max_seq_len
         self.cuda = cuda
         if bert_pretrained:
             self.bert_model = BertModel.from_pretrained(bert_pretrained)
-            self.bert_tokenizer = BertTokenizer.from_pretrained(bert_pretrained)
+            self.bert_tokenizer = BertTokenizer.from_pretrained(
+                bert_pretrained)
             if cuda:
                 self.bert_model.cuda()
                 self.bert_model.eval()
 
         else:
-            self.bert_model = self._load_bert(bert_config_path, bert_model_path)
+            self.bert_model = self._load_bert(
+                bert_config_path, bert_model_path)
             self.bert_tokenizer = BertTokenizer.from_pretrained(bert_tokenizer)
 
     def _load_bert(self, bert_config_path: str, bert_model_path: str):
@@ -53,11 +55,12 @@ class BertEmbedder:
 
     def _get_sentences_embedding(self, sentences: List[str]) -> ndarray:
         # TODO: clean up batch approach
-        input_ids = [self.bert_tokenizer.encode(s, add_special_tokens=True) for s in sentences]
+        input_ids = [self.bert_tokenizer.encode(
+            s, add_special_tokens=True) for s in sentences]
         padded_len = min(max([len(x) for x in input_ids]), self.max_seq_len)
         num_inputs = len(input_ids)
         input_tensor = np.zeros((num_inputs, padded_len))
-        for i,x in enumerate(input_ids):
+        for i, x in enumerate(input_ids):
             l = min(padded_len, len(x))
             input_tensor[i][:l] = x[:l]
         if self.cuda:
@@ -71,7 +74,8 @@ class BertEmbedder:
             # Original pacsum paper uses [CLS] next sentence prediction activations
             # this isn't optimal and should be changed for potentially better performance
             with torch.no_grad():
-                pooled_output = self.bert_model(input_batch)[1] # shape = (x, 768)
+                pooled_output = self.bert_model(
+                    input_batch)[1]  # shape = (x, 768)
             if self.cuda:
                 pooled_output = pooled_output.cpu()
             else:
@@ -91,7 +95,3 @@ class BertEmbedder:
                               for se in sentence_embeddings]
 
         return Embeddings(sentence=sentence_embeddings, section=section_embeddings)
-
-
-
-

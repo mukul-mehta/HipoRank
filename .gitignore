@@ -130,6 +130,5 @@ dmypy.json
 
 data/
 models/
-results/
 temp/
 

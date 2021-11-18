@@ -24,13 +24,28 @@ class PubmedDataset(object):
                  no_sections: bool = False,
                  min_words: Optional[int] = None,
                  max_words: Optional[int] = None,
-                 min_sent_len: int = 1 # min num of alphabetical words
+                 min_sent_len: int = 1  # min num of alphabetical words
                  ):
         self._file_path = file_path
         self.no_sections = no_sections
         self.min_sent_len = min_sent_len
-        docs = [PubmedDoc(**json.loads(l)) for l in Path(self._file_path).read_text().split("\n") if l]
-        docs = [d for d in docs if not all([s == [''] for s in d.sections])]
+
+        # for l in Path(self._file_path).read_text().split("\n"):
+        #     print(type(l))
+        #     t = json.loads(l)[0]
+        #     print(t)
+        #     print(type(t))
+        #     print(t.keys())
+
+        docs = [PubmedDoc(**json.load(open(self._file_path)))]
+        temp = []
+        for d in docs:
+            t = d
+            t.section_names = ["Discussion"]
+            t.sections = [d.article_text]
+            temp.append(t)
+
+        docs = temp
         if min_words or max_words:
             docs = self._filter_doc_len(docs, min_words, max_words)
         self.docs = docs
@@ -61,8 +76,10 @@ class PubmedDataset(object):
                 sn_counter[sn] -= 1
             else:
                 section_names = [sn] + section_names
-        sentences = [[s for s in sents if len([w for w in s.split() if w.isalpha()]) >= self.min_sent_len] for sents in doc.sections]
-        sections = [Section(id=n, sentences=s) for n, s in zip(section_names, sentences) if s]
+        sentences = [[s for s in sents if len([w for w in s.split(
+        ) if w.isalpha()]) >= self.min_sent_len] for sents in doc.sections]
+        sections = [Section(id=n, sentences=s)
+                    for n, s in zip(section_names, sentences) if s]
         return sections
 
     def _get_reference(self, doc: PubmedDoc) -> List[str]:
@@ -85,4 +102,4 @@ class PubmedDataset(object):
             docs = self.docs[i]
             sections = [self._get_sections(doc) for doc in docs]
             references = [self._get_reference(doc) for doc in docs]
-            return [Document(sections=s, reference=r) for s,r in zip(sections, references)]
+            return [Document(sections=s, reference=r) for s, r in zip(sections, references)]
